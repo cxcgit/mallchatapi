@@ -1,9 +1,12 @@
 package com.caixc.mallchat.common.websocket;
 
 
+import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONUtil;
 import com.caixc.mallchat.common.websocket.domain.enums.WSReqTypeEnum;
 import com.caixc.mallchat.common.websocket.domain.vo.res.WSBaseReq;
+import com.caixc.mallchat.common.websocket.service.WebSocketService;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -18,6 +21,26 @@ import lombok.extern.slf4j.Slf4j;
 @Sharable
 public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
 
+    private WebSocketService webSocketService;
+
+    /**
+     * 创建websoket连接的时候
+     * @param ctx
+     * @throws Exception
+     */
+    @Override
+    public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+        webSocketService =  SpringUtil.getBean(WebSocketService.class);
+        webSocketService.connect(ctx.channel());
+    }
+
+    /**
+     * 心跳检查
+     *
+     * @param ctx
+     * @param evt
+     * @throws Exception
+     */
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof WebSocketServerProtocolHandler.HandshakeComplete){
@@ -26,20 +49,40 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
             if (((IdleStateEvent) evt).state() == IdleState.READER_IDLE){
                 System.out.println("用户下线");
                 // todo 用户下线
-                // 关闭连接
-                ctx.channel().close();
+                useOffLine(ctx.channel());
             }
         }
     }
 
+    /**
+     * 断开
+     * @param ctx
+     * @throws Exception
+     */
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        useOffLine(ctx.channel());
+    }
+
+    private void useOffLine(Channel channel){
+        webSocketService.useOff(channel);
+        channel.close();
+    }
+
+    /**
+     * 读取客户端发送的请求报文
+     * @param ctx           the {@link ChannelHandlerContext} which this {@link SimpleChannelInboundHandler}
+     *                      belongs to
+     * @param msg           the message to handle
+     * @throws Exception
+     */
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, TextWebSocketFrame msg) throws Exception {
         String text = msg.text();
         WSBaseReq wsBaseReq = JSONUtil.toBean(text, WSBaseReq.class);
         switch (WSReqTypeEnum.of(wsBaseReq.getType())) {
             case LOGIN:
-                System.out.println("请求登录二维码");
-                ctx.channel().writeAndFlush(new TextWebSocketFrame("返回"));
+                this.webSocketService.handleLoginReq(ctx.channel());
             case AUTHORIZE:
                 System.out.println("登录认证");
                 break;
