@@ -19,4 +19,6 @@ public interface WebSocketService {
     void scanLoginSuccess(Integer loginCode, Long id);
 
     void waitAuthorize(Integer loginCode);
+
+    void authorizeSuccess(Integer loginCode);
 }

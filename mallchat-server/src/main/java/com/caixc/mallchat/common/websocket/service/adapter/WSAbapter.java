@@ -23,14 +23,15 @@ public class WSAbapter {
         return wsBaseResp;
     }
 
-    public static WSBaseResp<?> buildWaitAuthorizeResp() {
+    public static WSBaseResp<?> buildScanSuccessResp() {
         WSBaseResp<?> wsBaseResp = new WSBaseResp<>();
-        wsBaseResp.setType(WSRespTypeEnum.LOGIN_URL.getType());
+        wsBaseResp.setType(WSRespTypeEnum.LOGIN_SCAN_SUCCESS.getType());
         return wsBaseResp;
     }
 
     public static WSBaseResp<WSLoginSuccess> buildLoginSuccessResp(String token , User user) {
         WSBaseResp<WSLoginSuccess> wsBaseResp = new WSBaseResp<>();
+        wsBaseResp.setType(WSRespTypeEnum.LOGIN_SUCCESS.getType());
         wsBaseResp.setData(WSLoginSuccess.builder()
                 .uid(user.getId())
                 .name(user.getName())

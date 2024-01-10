@@ -3,6 +3,7 @@ package com.caixc.mallchat.common.websocket.service.impl;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.json.JSONUtil;
 import com.caixc.mallchat.common.user.domain.entity.User;
+import com.caixc.mallchat.common.user.service.LoginService;
 import com.caixc.mallchat.common.user.service.UserService;
 import com.caixc.mallchat.common.websocket.domain.dto.WSChannelExtraDTO;
 import com.caixc.mallchat.common.websocket.service.WebSocketService;
@@ -59,7 +60,8 @@ public class WebSocketServiceImpl implements WebSocketService {
     private WxMpService wxMpService;
     @Resource
     private UserService userService;
-
+    @Resource
+    private LoginService loginService;
 
     /**
      * 处理所有ws连接的事件
@@ -96,15 +98,20 @@ public class WebSocketServiceImpl implements WebSocketService {
         User user = userService.getById(id);
         WAIT_LOGIN_MAP.invalidate(loginCode);
         // 登录获取token
-        String token = "";
+        String token = loginService.login(id);
+
         channel.writeAndFlush(new TextWebSocketFrame(JSONUtil.toJsonStr(WSAbapter.buildLoginSuccessResp(token,user))));
     }
 
     @Override
     public void waitAuthorize(Integer loginCode) {
         Channel channel = WAIT_LOGIN_MAP.getIfPresent(loginCode);
-        WSAbapter.buildWaitAuthorizeResp();
-        channel.writeAndFlush(new TextWebSocketFrame(JSONUtil.toJsonStr(WSAbapter.buildWaitAuthorizeResp())));
+        channel.writeAndFlush(new TextWebSocketFrame(JSONUtil.toJsonStr(WSAbapter.buildScanSuccessResp())));
+    }
+
+    @Override
+    public void authorizeSuccess(Integer loginCode) {
+
     }
 
     /**

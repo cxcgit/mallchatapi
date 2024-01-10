@@ -64,6 +64,10 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
         useOffLine(ctx.channel());
     }
 
+    /**
+     * 用户下线
+     * @param channel
+     */
     private void useOffLine(Channel channel){
         webSocketService.useOff(channel);
         channel.close();

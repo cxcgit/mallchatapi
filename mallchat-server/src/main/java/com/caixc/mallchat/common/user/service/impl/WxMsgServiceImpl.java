@@ -49,7 +49,7 @@ public class WxMsgServiceImpl implements WxMsgService {
         if (Objects.isNull(loginCode)){
             return null;
         }
-        User user = userService.getById(openid);
+        User user = userService.getUserByOpenId(openid);
         // 用户存在  并且已经授权 调用登录逻辑
         if (Objects.nonNull(user) && StrUtil.isNotBlank(user.getAvatar())){
             // todo 登录返回token   webscoket返回登录成功
@@ -70,8 +70,10 @@ public class WxMsgServiceImpl implements WxMsgService {
     @Override
     public void authorize(WxOAuth2UserInfo userInfo) {
         userService.authorize(userInfo);
+        User user = userService.getUserByOpenId(userInfo.getOpenid());
         Integer loginCode = WAIT_AUTHORIZE_MAN.remove(userInfo.getOpenid());
         // 通过code找到websoket通道
+        webSocketService.scanLoginSuccess(loginCode,user.getId());
     }
 
     /**

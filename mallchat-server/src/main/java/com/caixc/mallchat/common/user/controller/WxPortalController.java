@@ -58,8 +58,11 @@ public class WxPortalController {
     @GetMapping("/callBack")
     public RedirectView callBack(@RequestParam String code) {
         try {
+            // 获取微信token
             WxOAuth2AccessToken accessToken = wxService.getOAuth2Service().getAccessToken(code);
+            // 获取微信用户信息
             WxOAuth2UserInfo userInfo = wxService.getOAuth2Service().getUserInfo(accessToken, "zh_CN");
+            // 授权
             wxMsgService.authorize(userInfo);
         } catch (Exception e) {
             log.error("callBack error", e);
