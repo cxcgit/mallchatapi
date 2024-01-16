@@ -99,7 +99,6 @@ public class WebSocketServiceImpl implements WebSocketService {
         WAIT_LOGIN_MAP.invalidate(loginCode);
         // 登录获取token
         String token = loginService.login(id);
-
         channel.writeAndFlush(new TextWebSocketFrame(JSONUtil.toJsonStr(WSAbapter.buildLoginSuccessResp(token,user))));
     }
 
