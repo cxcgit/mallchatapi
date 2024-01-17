@@ -6,9 +6,11 @@ import com.caixc.mallchat.common.common.uitls.JwtUtils;
 import com.caixc.mallchat.common.common.uitls.RedisUtils;
 import com.caixc.mallchat.common.user.service.LoginService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -22,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 public class LoginServiceImpl implements LoginService {
     //token过期时间
     private static final Integer TOKEN_EXPIRE_DAYS = 5;
+    public static final Integer TOKEN_RENEWAL_DAYS = 1;
     @Resource
     private JwtUtils jwtUtils;
 
@@ -30,9 +33,28 @@ public class LoginServiceImpl implements LoginService {
         return false;
     }
 
+    /***
+     * @Description: token续期
+     * @Author: caixc
+     * @Date: 2024/1/17 17:04
+     * @param token:
+     * @return: void
+     */
+    @Async
     @Override
     public void renewalTokenIfNecessary(String token) {
-
+        Long uid = jwtUtils.getUidOrNull(token);
+        if (Objects.isNull(uid)) {
+            return;
+        }
+        String key = RedisKey.getKey(RedisKey.USER_TOKEN_STRING, uid);
+        long expireDays = RedisUtils.getExpire(key, TimeUnit.DAYS);
+        if (expireDays == -2) {//不存在的key
+            return;
+        }
+        if (expireDays < TOKEN_RENEWAL_DAYS) {//小于一天的token帮忙续期
+            RedisUtils.expire(key, TOKEN_EXPIRE_DAYS, TimeUnit.DAYS);
+        }
     }
 
     @Override

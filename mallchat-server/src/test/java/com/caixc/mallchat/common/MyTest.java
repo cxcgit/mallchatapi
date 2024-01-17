@@ -3,6 +3,10 @@ package com.caixc.mallchat.common;
 import com.caixc.mallchat.common.common.constant.RedisKey;
 import com.caixc.mallchat.common.common.uitls.JwtUtils;
 import com.caixc.mallchat.common.common.uitls.RedisUtils;
+import com.caixc.mallchat.common.designPatterns.decorativeMode.BlackBorderDecorator;
+import com.caixc.mallchat.common.designPatterns.decorativeMode.Component;
+import com.caixc.mallchat.common.designPatterns.decorativeMode.ScrollBarDecorator;
+import com.caixc.mallchat.common.designPatterns.decorativeMode.Window;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -63,5 +67,18 @@ public class MyTest {
 //        lock.isLocked();
         System.out.println(holdCount);
 
+    }
+
+    // 装饰模式
+    public static void main(String[] args) {
+        Component component, componentSB, componentBB;
+        component = new Window();
+        componentSB = new ScrollBarDecorator(component);
+        // 增强原有构件功能-->添加滚动条
+        componentSB.display();
+        System.out.println("===================");
+        // 继续增强-->添加滚动条，添加黑色边框
+        componentBB = new BlackBorderDecorator(componentSB);
+        componentBB.display();
     }
 }
